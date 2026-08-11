@@ -95,6 +95,7 @@ source material:
 ## Running it
 
 ```bash
+# in your terminal of choice (Note: needs installed python on your machine):
 uv sync
 uv run python src/ingest.py      # test feed fetching
 uv run python src/storage.py     # test the SQLite layer
