@@ -105,15 +105,15 @@ You do not "run" this app directly - you clone it, register it as an MCP
 server and then talk to it through Claude. In your terminal:
 
 ```bash
-git clone https://github.com/davpu/it-digest
-cd it-digest
+git clone https://github.com/davpu/news-auto-digest
+cd news-auto-digest
 uv sync
 claude mcp add it-digest -- uv run --directory "$(pwd)" python src/mcp_server.py
 ```
 
 The registration is scoped to the directory you run `claude mcp add` from -
-start your Claude Code sessions there (`cd it-digest && claude`) to see the
-server.
+start your Claude Code sessions there (`cd news-auto-digest && claude`) to
+see the server.
 
 Then just ask, in plain language:
 
