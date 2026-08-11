@@ -6,9 +6,11 @@ claude mcp add news-digest -- uv run --directory <repo> python src/mcp_server.py
 
 from __future__ import annotations
 
+import asyncio
 import re
 import sqlite3
 
+import httpx
 from mcp.server import MCPServer
 
 import ingest
@@ -18,13 +20,34 @@ mcp = MCPServer("news-digest")
 
 DB_PATH = "digest.db"
 
+FEEDS_HEADER = """\
+# Your feeds - one URL per line, lines starting with # are ignored.
+# While this file has no active entries, the bundled defaults are used
+# (see DEFAULT_FEEDS in src/ingest.py).
+"""
+
+
+def _read_feeds_file() -> list[str]:
+    """Active entries in feeds.txt; empty list means bundled defaults apply."""
+    if not ingest.FEEDS_FILE.exists():
+        return []
+    return [
+        ln.strip() for ln in ingest.FEEDS_FILE.read_text().splitlines()
+        if ln.strip() and not ln.strip().startswith("#")
+    ]
+
+
+def _write_feeds_file(urls: list[str]) -> None:
+    body = "\n".join(urls)
+    ingest.FEEDS_FILE.write_text(FEEDS_HEADER + (body + "\n" if body else ""))
+
 
 @mcp.tool()
 async def fetch_latest() -> str:
     """Fetch the latest articles from all configured RSS feeds and store
     them (duplicates are skipped). Use when the user wants to refresh the
     archive or asks about the newest articles."""
-    articles = await ingest.ingest(ingest.FEED_URLS)
+    articles = await ingest.ingest(ingest.load_feed_urls())
     db_conn = storage.init_db(DB_PATH)
 
     try:
@@ -124,6 +147,99 @@ async def make_digest(days: int = 7) -> str:
 
     raise NotImplementedError
 
+
+
+@mcp.tool()
+async def list_sources() -> str:
+    """List the feeds the digest currently aggregates, with the number of
+    stored articles per source. Reports whether the app runs on bundled
+    default feeds (feeds.txt is empty) or the user's own selection."""
+    own = _read_feeds_file()
+    active = own or ingest.DEFAULT_FEEDS
+
+    db_conn = db_connect()
+    try:
+        counts = {
+            row["source_name"]: row["article_count"]
+            for row in storage.articles_per_source(db_conn)
+        }
+    finally:
+        db_conn.close()
+
+    mode = "user-defined feeds" if own else "bundled defaults - feeds.txt is empty"
+    lines = [f"Active sources ({mode}):"]
+    for url in active:
+        lines.append(f"- {url} ({counts.get(url, 0)} articles stored)")
+    return "\n".join(lines)
+
+
+@mcp.tool()
+async def add_source(url: str, keep_defaults: bool = False) -> str:
+    """Validate and add a new RSS/Atom feed to feeds.txt. Use when the user
+    wants to follow a new source. The feed is downloaded and parsed first -
+    invalid or dead URLs are rejected, nothing is written.
+
+    While feeds.txt is empty the app runs on bundled default feeds. When
+    adding the user's FIRST own feed, ask them once whether to keep the
+    defaults too (then call this with keep_defaults=True) or start fresh
+    with only their own sources. Do not ask again once feeds.txt has
+    entries."""
+    if not url.startswith(("http://", "https://")):
+        return f"Rejected: '{url}' is not an http(s) URL."
+
+    async with httpx.AsyncClient() as client:
+        raw = await ingest.fetch_feed(client, url)
+    if raw is None:
+        return f"Rejected: could not download {url}."
+    feed = await asyncio.to_thread(ingest._parse_sync, raw)
+    if not feed.entries:
+        return f"Rejected: {url} does not look like an RSS/Atom feed (no entries)."
+
+    own = _read_feeds_file()
+    if url in own:
+        return f"Already present: {url}"
+
+    if own:
+        new_list = own + [url]
+    elif keep_defaults:
+        new_list = [*ingest.DEFAULT_FEEDS, url]
+    else:
+        new_list = [url]
+    _write_feeds_file(new_list)
+
+    title = feed.feed.get("title", url)
+    return f"Added '{title}' ({url}). Active sources now: {len(new_list)}."
+
+
+@mcp.tool()
+async def remove_source(url: str) -> str:
+    """Remove a feed from feeds.txt. Use when the user no longer wants a
+    source. Already stored articles from that source stay in the archive."""
+    own = _read_feeds_file()
+    if url not in own:
+        hint = (
+            " (the app runs on bundled defaults - they cannot be removed one"
+            " by one; add the user's own feeds to replace them)"
+            if not own else ""
+        )
+        return f"Not in feeds.txt: {url}{hint}"
+
+    remaining = [u for u in own if u != url]
+    _write_feeds_file(remaining)
+    note = " feeds.txt is now empty, so the bundled defaults apply again." if not remaining else ""
+    return f"Removed {url}.{note}"
+
+
+@mcp.prompt()
+def setup_sources(topic: str) -> str:
+    """Reusable prompt: find, validate and add quality feeds for a topic."""
+    return (
+        f"Suggest 3-5 quality RSS/Atom feeds about {topic}. Check "
+        "list_sources first - if the app still runs on bundled defaults, ask "
+        "the user whether to keep them alongside the new feeds or start "
+        "fresh. Then add each candidate via add_source (it validates the "
+        "feed) and report which were added and which were rejected."
+    )
 
 
 @mcp.prompt()

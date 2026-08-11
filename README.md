@@ -72,8 +72,8 @@ with the defaults:
     │  mcp_server.py          │     │  api.py                 │
     │  MCPServer, stdio       │     │  FastAPI, Pydantic      │
     │  tools: fetch_latest,   │     │  GET /digest/latest     │
-    │  search_archive,        │     │  GET /articles          │
-    │  make_digest            │     │                         │
+    │  search, digest,        │     │  GET /articles          │
+    │  source management      │     │                         │
     └─────────────────────────┘     └─────────────────────────┘
          ▲
          │ stdio transport
@@ -149,7 +149,11 @@ what makes the app domain-agnostic:
 
 - `feeds.txt` - **what to digest from**: one feed URL per line, any domain;
   while empty, the app runs on bundled defaults (`DEFAULT_FEEDS` in
-  `src/ingest.py`)
+  `src/ingest.py`). You can also just ask Claude - the `list_sources`,
+  `add_source` and `remove_source` tools manage this file conversationally,
+  and each new feed is downloaded and validated before it is added. The
+  `setup_sources` prompt template bootstraps a whole new domain in one go
+  ("find me quality economics feeds")
 - `prompts/interests.md` - default relevance profile for the LLM
   classification step (phase 2)
 - **what to digest**: the `daily_digest` prompt template and the
