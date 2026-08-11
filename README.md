@@ -2,8 +2,7 @@
 
 A small personal "IT digest": RSS aggregator with optional LLM summarization,
 exposed as an **MCP server** for Claude Code / Claude Desktop (plus a FastAPI
-HTTP layer). Built as a learning project - a TypeScript/Node developer's road
-into Python, focused on asyncio, raw SQL, the Anthropic API and the Model
+HTTP layer). Built as a hobby project "delve into Python", focused on asyncio, raw SQL, the Anthropic API and the Model
 Context Protocol.
 
 ## What it does
@@ -16,7 +15,7 @@ source material:
 > **Today's AI news (Aug 11, 2026)**
 >
 > *Local and edge inference - today's strongest theme*
-> - H3-metal (391 pts) - antirez wrote native MiniMax-H3 inference for Apple
+> - H3-metal (391 pts) - Antirust wrote native MiniMax-H3 inference for Apple
 >   Silicon in plain C. The biggest AI story of the day on HN.
 > - Needle 2 (472 pts) - a 14 MB agentic LLM: tool calls and structured
 >   extraction on phones and Raspberry Pi 5 (~500 tok/s).
@@ -65,10 +64,6 @@ source material:
          │ stdio transport
     Claude Code / Claude Desktop (MCP host)
 ```
-
-Both end modules are thin layers over the same functions - an MCP tool and an
-HTTP endpoint do the same thing over a different transport. An "MCP server" is
-not magic; it is another way to call a function you already have.
 
 ## Design decisions
 
