@@ -1,4 +1,4 @@
-# it-digest
+# News auto-digest POC
 
 A small personal "IT digest": RSS aggregator with optional LLM summarization,
 exposed as an **MCP server** for Claude Code / Claude Desktop (plus a FastAPI
