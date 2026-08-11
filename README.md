@@ -19,7 +19,13 @@ Context Protocol.
 Register the server in Claude Code and ask *"fetch the latest articles and
 give me an overview of today's AI news"*. The model calls the `fetch_latest`
 and `get_articles_for_digest` tools on its own and writes the digest from the
-source material:
+source material.
+
+The app is **domain-agnostic**: it digests whatever your feeds cover. The
+bundled defaults are tech feeds, so the examples below are tech - but point
+`feeds.txt` at economics, sports or local-news sources and everything
+downstream (archive, search, digest, topic filter) follows. A sample run
+with the defaults:
 
 > **Today's AI news (Aug 11, 2026)**
 >
@@ -115,7 +121,8 @@ The registration is scoped to the directory you run `claude mcp add` from -
 start your Claude Code sessions there (`cd news-digest && claude`) to
 see the server.
 
-Then just ask, in plain language:
+Then just ask, in plain language (examples assume the default tech feeds -
+with your own sources, ask about your own domain):
 
 - *"fetch the latest articles and give me an overview of today's AI news"*
 - *"did we have anything about Kubernetes lately?"*
@@ -137,10 +144,12 @@ uv run python src/storage.py     # SQLite layer
 
 ## Configuration
 
-Everything model- or content-facing lives outside the code:
+Everything model- or content-facing lives outside the code, which is also
+what makes the app domain-agnostic:
 
-- `feeds.txt` - **what to digest from**: one feed URL per line; while empty,
-  the app runs on bundled defaults (`DEFAULT_FEEDS` in `src/ingest.py`)
+- `feeds.txt` - **what to digest from**: one feed URL per line, any domain;
+  while empty, the app runs on bundled defaults (`DEFAULT_FEEDS` in
+  `src/ingest.py`)
 - `prompts/interests.md` - default relevance profile for the LLM
   classification step (phase 2)
 - **what to digest**: the `daily_digest` prompt template and the
