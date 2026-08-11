@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# venv (uv)
+.venv/
+
+# projekt
+.env
+digest.db
+digest.db-journal
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/
