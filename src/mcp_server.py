@@ -6,6 +6,7 @@ claude mcp add news-digest -- uv run --directory <repo> python src/mcp_server.py
 
 from __future__ import annotations
 
+import re
 import sqlite3
 
 from mcp.server import MCPServer
@@ -69,7 +70,7 @@ async def get_articles_for_digest(days: int = 7, topic: str | None = None) -> st
     `days` days as a markdown list. Use when you (the host model) should
     write the digest yourself - this tool only provides the source material.
 
-    `topic` is an optional keyword pre-filter (substring match) - useful for
+    `topic` is an optional keyword pre-filter (whole-word match) - useful for
     large archives. Omit it to get everything and pick relevant articles
     yourself, which handles synonyms and related themes better."""
     db_connection = db_connect()
@@ -83,11 +84,11 @@ async def get_articles_for_digest(days: int = 7, topic: str | None = None) -> st
         db_connection.close()
 
     if topic:
-        needle = topic.lower()
+        pattern = re.compile(rf"\b{re.escape(topic)}\b", re.IGNORECASE)
         articles = [
             row for row in articles
-            if needle in row["title"].lower()
-            or (row["summary"] and needle in row["summary"].lower())
+            if pattern.search(row["title"])
+            or (row["summary"] and pattern.search(row["summary"]))
         ]
 
     if not articles:
