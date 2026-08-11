@@ -6,12 +6,12 @@ HTTP layer). Built as a hobby project "delve into Python", focused on asyncio, r
 Context Protocol.
 
 # README CONTENTS:
-[What it does](#what-it-does)
-[Architecture](#architecture)
-[Design decisions](#design-decisions)
-[Running it](#running-it)
-[Configuration](#configuration)
-[Repo structure](#repo-structure)
+- [What it does](#what-it-does)
+- [Architecture](#architecture)
+- [Design decisions](#design-decisions)
+- [Running it](#running-it)
+- [Configuration](#configuration)
+- [Repo structure](#repo-structure)
 
 ## What it does
 
