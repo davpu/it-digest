@@ -64,10 +64,14 @@ async def search_archive(query: str) -> str:
     return "\n".join(f"- {row['title']} ({row['url']})" for row in rows)
 
 @mcp.tool()
-async def get_articles_for_digest(days: int = 7) -> str:
+async def get_articles_for_digest(days: int = 7, topic: str | None = None) -> str:
     """Return raw article data (title, URL, source, summary) from the last
     `days` days as a markdown list. Use when you (the host model) should
-    write the digest yourself - this tool only provides the source material."""
+    write the digest yourself - this tool only provides the source material.
+
+    `topic` is an optional keyword pre-filter (substring match) - useful for
+    large archives. Omit it to get everything and pick relevant articles
+    yourself, which handles synonyms and related themes better."""
     db_connection = db_connect()
 
     try:
@@ -78,11 +82,21 @@ async def get_articles_for_digest(days: int = 7) -> str:
     finally:
         db_connection.close()
 
+    if topic:
+        needle = topic.lower()
+        articles = [
+            row for row in articles
+            if needle in row["title"].lower()
+            or (row["summary"] and needle in row["summary"].lower())
+        ]
+
     if not articles:
         day_or_days_string = "days" if days != 1 else "day"
-        return f"No new articles in {days} {day_or_days_string}."
+        scope = f" matching '{topic}'" if topic else ""
+        return f"No articles{scope} in the last {days} {day_or_days_string}."
 
-    lines = [f"# Articles from the last {days} days ({len(articles)})", ""]
+    heading_scope = f" about '{topic}'" if topic else ""
+    lines = [f"# Articles{heading_scope} from the last {days} days ({len(articles)})", ""]
     for row in articles:
         source_name = source_names.get(row["source_id"], "?")
         lines.append(f"- [{row['title']}]({row['url']}) - {source_name}")
@@ -112,13 +126,15 @@ async def make_digest(days: int = 7) -> str:
 
 
 @mcp.prompt()
-def daily_digest(days: int = 1) -> str:
-    """Reusable prompt: refresh the archive and write a themed digest."""
+def daily_digest(topic: str = "", days: int = 1) -> str:
+    """Reusable prompt: refresh the archive and write a themed digest,
+    optionally focused on one topic."""
+    focus = f" Focus only on articles related to: {topic}." if topic else ""
     return (
         f"Fetch the latest articles, then load the archive from the last {days} "
-        "day(s) via get_articles_for_digest and write a digest: group articles "
-        "by theme, keep bullets short, link every title, and end with a one-line "
-        "note about what was left out."
+        f"day(s) via get_articles_for_digest and write a digest.{focus} Group "
+        "articles by theme, keep bullets short, link every title, and end with "
+        "a one-line note about what was left out."
     )
 
 

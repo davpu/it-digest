@@ -10,14 +10,21 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+from pathlib import Path
 
 import feedparser
 import httpx
 
-# Feeds to aggregate - add your own. Hacker News RSS is a reliable test feed.
-FEED_URLS: list[str] = [
-    "https://hnrss.org/frontpage",
-]
+FEEDS_FILE = Path(__file__).resolve().parent.parent / "feeds.txt"
+
+
+def load_feed_urls(path: Path = FEEDS_FILE) -> list[str]:
+    """Read feed URLs from feeds.txt (one per line, # comments ignored)."""
+    lines = path.read_text().splitlines()
+    return [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("#")]
+
+
+FEED_URLS: list[str] = load_feed_urls()
 
 
 @dataclass

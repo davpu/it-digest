@@ -103,13 +103,22 @@ claude mcp add it-digest -- uv run --directory /path/to/it-digest python src/mcp
 Phase 2 (`make_digest`, module `llm.py`) needs `ANTHROPIC_API_KEY` in `.env`
 (see `.env.example`).
 
+## Configuration
+
+Everything model- or content-facing lives outside the code:
+
+- `feeds.txt` - **what to digest from**: one feed URL per line
+- `prompts/interests.md` - default relevance profile for the LLM
+  classification step (phase 2)
+- **what to digest**: the `daily_digest` prompt template and the
+  `get_articles_for_digest` tool both take an optional `topic`, so the same
+  archive can produce an AI digest, a security digest, or anything else
+
 ## Repo structure
 
 - `src/` - the code (5 modules, see diagram)
-- `prompts/` - model-facing text kept out of code: `interests.md` drives the
-  classification step, editable without touching Python
+- `prompts/` - model-facing text kept out of code
 
-The MCP server also exposes a `daily_digest` prompt template (MCP prompts
-primitive), so hosts can offer the whole flow as a one-click action.
-
-Feeds are configured in `ingest.py` (`FEED_URLS`).
+The MCP server also exposes a `daily_digest(topic, days)` prompt template
+(MCP prompts primitive), so hosts can offer the whole flow as a one-click
+action.
