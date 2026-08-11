@@ -1,7 +1,7 @@
 """MCP server exposing the digest pipeline as tools.
 
 Runs on stdio transport; register with an MCP host, e.g.:
-claude mcp add it-digest -- uv run --directory <repo> python src/mcp_server.py
+claude mcp add news-digest -- uv run --directory <repo> python src/mcp_server.py
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from mcp.server import MCPServer
 import ingest
 import storage
 
-mcp = MCPServer("it-digest")
+mcp = MCPServer("news-digest")
 
 DB_PATH = "digest.db"
 

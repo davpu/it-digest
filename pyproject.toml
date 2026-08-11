@@ -1,5 +1,5 @@
 [project]
-name = "it-digest"
+name = "news-digest"
 version = "0.1.0"
 description = "Personal RSS digest with LLM summarization, exposed as an MCP server for Claude"
 requires-python = ">=3.12"

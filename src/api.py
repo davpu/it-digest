@@ -16,7 +16,7 @@ from pydantic import BaseModel
 import storage
 import llm
 
-app = FastAPI(title="it-digest API")
+app = FastAPI(title="news-digest API")
 
 DB_PATH = "digest.db"
 

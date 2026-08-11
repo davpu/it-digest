@@ -1,6 +1,6 @@
-# News auto-digest POC
+# news-digest
 
-A small personal "IT digest": RSS aggregator with optional LLM summarization,
+A small personal news digest: RSS aggregator with optional LLM summarization,
 exposed as an **MCP server** for Claude Code / Claude Desktop (plus a FastAPI
 HTTP layer). Built as a hobby project "delve into Python", focused on asyncio, raw SQL, the Anthropic API and the Model
 Context Protocol.
@@ -105,14 +105,14 @@ You do not "run" this app directly - you clone it, register it as an MCP
 server and then talk to it through Claude. In your terminal:
 
 ```bash
-git clone https://github.com/davpu/news-auto-digest
-cd news-auto-digest
+git clone https://github.com/davpu/news-digest
+cd news-digest
 uv sync
-claude mcp add it-digest -- uv run --directory "$(pwd)" python src/mcp_server.py
+claude mcp add news-digest -- uv run --directory "$(pwd)" python src/mcp_server.py
 ```
 
 The registration is scoped to the directory you run `claude mcp add` from -
-start your Claude Code sessions there (`cd news-auto-digest && claude`) to
+start your Claude Code sessions there (`cd news-digest && claude`) to
 see the server.
 
 Then just ask, in plain language:
@@ -121,7 +121,7 @@ Then just ask, in plain language:
 - *"did we have anything about Kubernetes lately?"*
 
 or use the built-in prompt template as a one-click action:
-`/mcp__it-digest__daily_digest` (arguments: `topic`, `days`).
+`/mcp__news-digest__daily_digest` (arguments: `topic`, `days`).
 
 Phase 2 (`make_digest`, module `llm.py`) needs `ANTHROPIC_API_KEY` in `.env`
 (see `.env.example`).
