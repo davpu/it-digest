@@ -101,11 +101,16 @@ with the defaults:
 
 ## Getting started
 
-You will need two tools installed:
+You will need these tools installed:
 
+- [git](https://git-scm.com/downloads) - to clone this repo (on macOS,
+  `xcode-select --install` gets you it)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) - Python
   package manager (also installs Python itself if you have none)
 - [Claude Code](https://code.claude.com/docs) - the MCP host you will talk to
+
+No git? Download the repo as a ZIP from the green **Code** button on GitHub,
+unpack it, and start from `cd news-digest` below.
 
 You do not "run" this app directly - you clone it, register it as an MCP
 server and then talk to it through Claude. In your terminal:
