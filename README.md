@@ -5,6 +5,14 @@ exposed as an **MCP server** for Claude Code / Claude Desktop (plus a FastAPI
 HTTP layer). Built as a hobby project "delve into Python", focused on asyncio, raw SQL, the Anthropic API and the Model
 Context Protocol.
 
+# README CONTENTS:
+[What it does](#what-it-does)
+[Architecture](#architecture)
+[Design decisions](#design-decisions)
+[Running it](#running-it)
+[Configuration](#configuration)
+[Repo structure](#repo-structure)
+
 ## What it does
 
 Register the server in Claude Code and ask *"fetch the latest articles and
