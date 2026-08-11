@@ -9,7 +9,8 @@ Context Protocol.
 - [What it does](#what-it-does)
 - [Architecture](#architecture)
 - [Design decisions](#design-decisions)
-- [Running it](#running-it)
+- [Getting started](#getting-started)
+- [Development](#development)
 - [Configuration](#configuration)
 - [Repo structure](#repo-structure)
 
@@ -23,7 +24,7 @@ source material:
 > **Today's AI news (Aug 11, 2026)**
 >
 > *Local and edge inference - today's strongest theme*
-> - H3-metal (391 pts) - Antirust wrote native MiniMax-H3 inference for Apple
+> - H3-metal (391 pts) - antirez wrote native MiniMax-H3 inference for Apple
 >   Silicon in plain C. The biggest AI story of the day on HN.
 > - Needle 2 (472 pts) - a 14 MB agentic LLM: tool calls and structured
 >   extraction on phones and Raspberry Pi 5 (~500 tok/s).
@@ -92,26 +93,54 @@ source material:
 - **One dead feed never kills the run.** `fetch_feed` returns `None` instead
   of raising; a failing source is skipped and the rest proceed.
 
-## Running it
+## Getting started
+
+You will need two tools installed:
+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) - Python
+  package manager (also installs Python itself if you have none)
+- [Claude Code](https://code.claude.com/docs) - the MCP host you will talk to
+
+You do not "run" this app directly - you clone it, register it as an MCP
+server and then talk to it through Claude. In your terminal:
 
 ```bash
-# in your terminal of choice (Note: needs installed python on your machine):
+git clone https://github.com/davpu/it-digest
+cd it-digest
 uv sync
-uv run python src/ingest.py      # test feed fetching
-uv run python src/storage.py     # test the SQLite layer
-
-# register the MCP server in Claude Code:
-claude mcp add it-digest -- uv run --directory /path/to/it-digest python src/mcp_server.py
+claude mcp add it-digest -- uv run --directory "$(pwd)" python src/mcp_server.py
 ```
+
+The registration is scoped to the directory you run `claude mcp add` from -
+start your Claude Code sessions there (`cd it-digest && claude`) to see the
+server.
+
+Then just ask, in plain language:
+
+- *"fetch the latest articles and give me an overview of today's AI news"*
+- *"did we have anything about Kubernetes lately?"*
+
+or use the built-in prompt template as a one-click action:
+`/mcp__it-digest__daily_digest` (arguments: `topic`, `days`).
 
 Phase 2 (`make_digest`, module `llm.py`) needs `ANTHROPIC_API_KEY` in `.env`
 (see `.env.example`).
+
+## Development
+
+Each module doubles as a smoke test when run directly:
+
+```bash
+uv run python src/ingest.py      # feed fetching
+uv run python src/storage.py     # SQLite layer
+```
 
 ## Configuration
 
 Everything model- or content-facing lives outside the code:
 
-- `feeds.txt` - **what to digest from**: one feed URL per line
+- `feeds.txt` - **what to digest from**: one feed URL per line; while empty,
+  the app runs on bundled defaults (`DEFAULT_FEEDS` in `src/ingest.py`)
 - `prompts/interests.md` - default relevance profile for the LLM
   classification step (phase 2)
 - **what to digest**: the `daily_digest` prompt template and the

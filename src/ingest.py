@@ -17,11 +17,22 @@ import httpx
 
 FEEDS_FILE = Path(__file__).resolve().parent.parent / "feeds.txt"
 
+# Used whenever feeds.txt is missing or has no active entries.
+DEFAULT_FEEDS: list[str] = [
+    "https://hnrss.org/newest?points=100",
+    "https://lobste.rs/rss",
+    "https://simonwillison.net/atom/everything/",
+]
+
 
 def load_feed_urls(path: Path = FEEDS_FILE) -> list[str]:
-    """Read feed URLs from feeds.txt (one per line, # comments ignored)."""
+    """Read feed URLs from feeds.txt (one per line, # comments ignored);
+    fall back to DEFAULT_FEEDS when the file is missing or empty."""
+    if not path.exists():
+        return DEFAULT_FEEDS
     lines = path.read_text().splitlines()
-    return [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("#")]
+    urls = [ln.strip() for ln in lines if ln.strip() and not ln.strip().startswith("#")]
+    return urls or DEFAULT_FEEDS
 
 
 FEED_URLS: list[str] = load_feed_urls()
@@ -89,6 +100,8 @@ async def ingest(urls: list[str]) -> list[Article]:
 
 
 async def _main() -> None:
+    
+
     articles = await ingest(FEED_URLS)
     print(f"Fetched {len(articles)} articles from {len(FEED_URLS)} sources.")
     for article in articles[:5]:
