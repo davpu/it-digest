@@ -7,8 +7,11 @@ claude mcp add news-digest -- uv run --directory <repo> python src/mcp_server.py
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import re
+import socket
 import sqlite3
+from urllib.parse import urlparse
 
 import httpx
 from mcp.server import MCPServer
@@ -25,6 +28,20 @@ FEEDS_HEADER = """\
 # While this file has no active entries, the bundled defaults are used
 # (see DEFAULT_FEEDS in src/ingest.py).
 """
+
+
+def _is_public_host(url: str) -> bool:
+    """Best-effort SSRF guard for add_source: reject URLs whose host resolves
+    to loopback/private/link-local ranges, so a prompted model cannot point
+    the fetch at localhost or the internal network."""
+    host = urlparse(url).hostname
+    if not host:
+        return False
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        return False
+    return all(ipaddress.ip_address(info[4][0]).is_global for info in infos)
 
 
 def _read_feeds_file() -> list[str]:
@@ -186,6 +203,8 @@ async def add_source(url: str, keep_defaults: bool = False) -> str:
     entries."""
     if not url.startswith(("http://", "https://")):
         return f"Rejected: '{url}' is not an http(s) URL."
+    if not await asyncio.to_thread(_is_public_host, url):
+        return f"Rejected: {url} does not resolve to a public address."
 
     async with httpx.AsyncClient() as client:
         raw = await ingest.fetch_feed(client, url)
