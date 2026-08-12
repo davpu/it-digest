@@ -269,8 +269,10 @@ def daily_digest(topic: str = "", days: int = 1) -> str:
     return (
         f"Fetch the latest articles, then load the archive from the last {days} "
         f"day(s) via get_articles_for_digest and write a digest.{focus} Group "
-        "articles by theme, keep bullets short, link every title, and end with "
-        "a one-line note about what was left out."
+        "articles by theme and keep bullets short. Render every article as a "
+        "clickable markdown link - [title](url) - using the URL from the tool "
+        "output, so the reader can open the source directly; never list a title "
+        "without its link. End with a one-line note about what was left out."
     )
 
 
