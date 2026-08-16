@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
@@ -18,7 +19,7 @@ import llm
 
 app = FastAPI(title="news-digest API")
 
-DB_PATH = "digest.db"
+DB_PATH = str(Path(__file__).resolve().parent.parent / "digest.db")
 
 
 class ArticleOut(BaseModel):

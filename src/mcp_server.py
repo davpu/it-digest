@@ -11,6 +11,7 @@ import ipaddress
 import re
 import socket
 import sqlite3
+from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
@@ -21,7 +22,7 @@ import storage
 
 mcp = MCPServer("news-digest")
 
-DB_PATH = "digest.db"
+DB_PATH = str(Path(__file__).resolve().parent.parent / "digest.db")
 
 FEEDS_HEADER = """\
 # Your feeds - one URL per line, lines starting with # are ignored.

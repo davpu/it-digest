@@ -76,18 +76,25 @@ def _parse_sync(raw_xml: str) -> feedparser.FeedParserDict:
 
 
 async def parse_feed_entries(source_url: str, raw_xml: str) -> list[Article]:
-    """Parse raw feed XML into Article objects."""
+    """Parse raw feed XML into Article objects. Entries without a URL are
+    skipped (nothing to link to); a missing title falls back to a placeholder
+    - either way, one malformed entry never kills the whole run."""
     feed = await asyncio.to_thread(_parse_sync, raw_xml)
-    return [
-        Article(
-            source_url=source_url,
-            title=entry.title,
-            url=entry.link,
-            published_at=getattr(entry, "published", None),
-            summary=getattr(entry, "summary", None),
+    articles = []
+    for entry in feed.entries:
+        url = getattr(entry, "link", None)
+        if not url:
+            continue
+        articles.append(
+            Article(
+                source_url=source_url,
+                title=getattr(entry, "title", "(no title)"),
+                url=url,
+                published_at=getattr(entry, "published", None),
+                summary=getattr(entry, "summary", None),
+            )
         )
-        for entry in feed.entries
-    ]
+    return articles
 
 
 async def ingest(urls: list[str]) -> list[Article]:

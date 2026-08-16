@@ -11,7 +11,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import anthropic
+from dotenv import load_dotenv
 from pydantic import BaseModel
+
+# Load ANTHROPIC_API_KEY (and any other config) from .env in the repo root,
+# so it doesn't have to be exported in the shell - see .env.example.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # Interests used in the classification prompt. Edit prompts/interests.md,
 # no code change needed.
